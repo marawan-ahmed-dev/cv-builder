@@ -40,9 +40,22 @@
         html[dir="rtl"] .form-section { border-left: 2px solid #e2e8f0; }
         html[dir="ltr"] .form-section { border-right: 2px solid #e2e8f0; }
 
+        .app-title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .app-logo {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+        }
+
         .form-section h2 { 
             text-align: center; 
-            margin-bottom: 20px; 
             background: var(--bg-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -91,6 +104,22 @@
             transition: 0.3s; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
         .custom-file-upload:hover { opacity: 0.9; transform: scale(1.01); }
+
+        .btn-delete-img {
+            display: none;
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-delete-img:hover { background: #dc2626; }
 
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 5px rgba(99, 102, 241, 0.2); }
         .form-group textarea { height: 65px; resize: vertical; }
@@ -183,6 +212,17 @@
         .print-btn { background: var(--bg-gradient); }
         .print-btn:hover { opacity: 0.9; }
 
+        @media (max-width: 768px) {
+            body { padding: 5px; height: auto; overflow: auto; }
+            .app-container { flex-direction: column !important; height: auto; border-radius: 10px; }
+            html[dir="ltr"] .app-container { flex-direction: column !important; }
+            .form-section, .preview-section { width: 100%; max-height: none; padding: 15px; }
+            html[dir="rtl"] .form-section, html[dir="ltr"] .form-section { border: none; border-bottom: 2px solid #e2e8f0; }
+            .resume-preview { padding: 15px; }
+            .header { flex-direction: column; text-align: center; }
+            html[dir="rtl"] .resume-preview, html[dir="ltr"] .resume-preview { text-align: center; }
+        }
+
         @media print {
             @page { size: auto; margin: 0mm; }
             body, html { padding: 0 !important; margin: 0 !important; background: white !important; height: 100% !important; overflow: visible !important; }
@@ -197,7 +237,10 @@
 
     <div class="app-container">
         <div class="form-section">
-            <h2>EasyCV Pro</h2>
+            <div class="app-title-container">
+                <img src="logo.png" alt="Logo" class="app-logo">
+                <h2>EasyCV Pro</h2>
+            </div>
             
             <div class="lang-switch-box">
                 <button class="lang-btn active" id="btnAr" onclick="changeLang('ar')">العربية</button>
@@ -209,6 +252,7 @@
                 <label id="l-img">الصورة الشخصية</label>
                 <label for="inImg" class="custom-file-upload" id="uploadLabel">اختر صورة شخصية</label>
                 <input type="file" id="inImg" accept="image/*">
+                <button type="button" class="btn-delete-img" id="btnDeleteImg" onclick="removeImage()">حذف الصورة الشخصية</button>
             </div>
             <div class="form-group">
                 <label id="l-name">الاسم الكامل</label>
@@ -404,10 +448,23 @@
                     const img = document.getElementById('outImg');
                     img.src = base64Image;
                     img.style.display = 'block';
+                    document.getElementById('btnDeleteImg').style.display = 'block';
                 }
                 reader.readAsDataURL(file);
             }
         });
+
+        function removeImage() {
+            base64Image = "";
+            const img = document.getElementById('outImg');
+            img.src = "";
+            img.style.display = 'none';
+            document.getElementById('inImg').value = "";
+            document.getElementById('btnDeleteImg').style.display = 'none';
+            
+            const currentLang = document.getElementById('htmlRoot').getAttribute('dir');
+            document.getElementById('uploadLabel').innerText = currentLang === 'rtl' ? "اختر صورة شخصية" : "Choose Profile Picture";
+        }
 
         function saveDataLocally() {
             const cvData = {
@@ -475,6 +532,7 @@
                     const img = document.getElementById('outImg');
                     img.src = base64Image;
                     img.style.display = 'block';
+                    document.getElementById('btnDeleteImg').style.display = 'block';
                 }
             }
         });
@@ -558,7 +616,8 @@
 
                 document.getElementById('t-base').innerText = "Basic Information";
                 document.getElementById('l-img').innerText = "Profile Picture";
-                document.getElementById('uploadLabel').innerText = "Choose Profile Picture";
+                document.getElementById('uploadLabel').innerText = base64Image ? "Image Selected" : "Choose Profile Picture";
+                document.getElementById('btnDeleteImg').innerText = "Delete Profile Picture";
                 document.getElementById('l-name').innerText = "Full Name";
                 document.getElementById('inName').placeholder = "Full Name";
                 document.getElementById('l-email').innerText = "Email Address";
@@ -622,7 +681,8 @@
 
                 document.getElementById('t-base').innerText = "البيانات الأساسية";
                 document.getElementById('l-img').innerText = "الصورة الشخصية";
-                document.getElementById('uploadLabel').innerText = "اختر صورة شخصية";
+                document.getElementById('uploadLabel').innerText = base64Image ? "تم اختيار الصورة" : "اختر صورة شخصية";
+                document.getElementById('btnDeleteImg').innerText = "حذف الصورة الشخصية";
                 document.getElementById('l-name').innerText = "الاسم الكامل";
                 document.getElementById('inName').placeholder = "الاسم ثلاثي";
                 document.getElementById('l-email').innerText = "البريد الإلكتروني";
@@ -634,9 +694,9 @@
                 document.getElementById('l-about').innerText = "نبذة عني";
                 document.getElementById('inAbout').placeholder = "اكتب نبذة عنك هنا...";
                 document.getElementById('l-edu').innerText = "التعليم";
-                document.getElementById('inEdu').placeholder = "الجامعة، الكلية، سنة التخرج...";
+                document.getElementById('inEdu').placeholder = "اكتب تفاصيل تعليمك هنا...";
                 document.getElementById('l-exp').innerText = "الخبرات العملية";
-                document.getElementById('inExp').placeholder = "الشركات التي عملت بها...";
+                document.getElementById('inExp').placeholder = "اكتب خبراتك هنا...";
 
                 document.getElementById('t-skills').innerText = "المهارات والإضافات";
                 document.getElementById('l-skills').innerText = "المهارات";
